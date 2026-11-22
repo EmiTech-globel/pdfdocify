@@ -1,7 +1,7 @@
 'use client'
 import {create} from 'zustand'
 import {persist} from 'zustand/middleware'
-export type Line = {type: 'product' | 'bundle'; slug: string; title: string; price: number}
+export type Line = {type: 'product' | 'bundle'; slug: string; title: string; price: number; color?: string; image?: string; meta?: string}
 type State = {lines: Line[]; add: (l: Line) => void; remove: (type: Line['type'], slug: string) => void; clear: () => void}
 // Display only. The server re-reads every price from Sanity at checkout.
 export const useCart = create<State>()(persist((set) => ({

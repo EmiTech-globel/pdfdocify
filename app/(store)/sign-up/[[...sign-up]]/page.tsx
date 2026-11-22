@@ -1,2 +1,8 @@
 import {SignUp} from '@clerk/nextjs'
-export default function Page() { return <div className="center"><SignUp /></div> }
+import AuthShell from '@/components/AuthShell'
+import {authElements} from '@/lib/clerk-theme'
+
+export const metadata = {title: 'Create account'}
+export default function Page() {
+  return <AuthShell><SignUp appearance={{elements: authElements}} /></AuthShell>
+}

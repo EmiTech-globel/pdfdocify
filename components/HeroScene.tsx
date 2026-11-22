@@ -23,8 +23,8 @@ export default function HeroScene({title, color, image}: {title: string; color?:
     return () => io.disconnect()
   }, [])
   return (
-    <div ref={ref} className="scene" role="img" aria-label={`Cover of ${title}`}>
-      {webgl === false && <div style={{maxWidth: 260, margin: '0 auto'}}><Cover title={title} color={color} /></div>}
+    <div ref={ref} className="relative h-[clamp(300px,42vw,460px)] flex-[1_1_360px]" role="img" aria-label={`Cover of ${title}`}>
+      {webgl === false && <div className="flex justify-center"><Cover size="lg" title={title} color={color} /></div>}
       {webgl && <Hero3D title={title} color={color ?? '#6B63C9'} image={image} still={still} paused={!visible} />}
     </div>
   )

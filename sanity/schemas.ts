@@ -16,10 +16,13 @@ const siteSettings = defineType({name: 'siteSettings', title: 'Site settings', t
 
 const product = defineType({name: 'product', title: 'Guide', type: 'document', fields: [
   defineField({name: 'title', type: 'string', validation: (r) => r.required()}), slug(),
+  defineField({name: 'headline', title: 'Product page headline', description: 'Shown as the big heading on the guide page. Falls back to the title.', type: 'string'}),
   defineField({name: 'summary', type: 'text', rows: 2}),
+  defineField({name: 'author', type: 'string'}),
   defineField({name: 'price', title: 'Price (NGN)', type: 'number', validation: (r) => r.required().min(100)}),
   defineField({name: 'pages', type: 'number'}),
-  defineField({name: 'category', type: 'string', options: {list: ['Design', 'Business', 'Career', 'Development', 'Student life', 'Craft']}}),
+  defineField({name: 'fileSizeMb', title: 'PDF size (MB)', type: 'number'}),
+  defineField({name: 'category', type: 'string', description: 'Free text. Use identical spelling across guides.'}),
   defineField({name: 'coverColor', title: 'Cover colour (hex)', type: 'string', validation: (r) => r.regex(/^#[0-9A-Fa-f]{6}$/)}),
   defineField({name: 'coverImage', title: 'Cover image', type: 'image', options: {hotspot: true}}),
   defineField({name: 'version', type: 'string', initialValue: '1.0'}),
