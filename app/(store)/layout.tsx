@@ -1,7 +1,6 @@
 import type {Metadata} from 'next'
 import Link from 'next/link'
 import {ClerkProvider} from '@clerk/nextjs'
-import '../globals.css'
 import Header from '@/components/Header'
 import {q} from '@/lib/sanity'
 import {settingsQ, type Settings} from '@/lib/queries'

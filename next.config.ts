@@ -12,10 +12,11 @@ const csp = [
   "frame-ancestors 'none'", "base-uri 'self'", "form-action 'self'", "object-src 'none'",
 ].join('; ')
 const config: NextConfig = {
+  allowedDevOrigins: ['http://localhost:3000.ngrok-free.app'],
   poweredByHeader: false,
   images: {remotePatterns: [{protocol: 'https', hostname: 'cdn.sanity.io'}]},
   async headers() {
-    return [{source: '/(.*), @', headers: [
+    return [{source: '/(.*)', headers: [
       {key: 'Content-Security-Policy', value: csp},
       {key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload'},
       {key: 'X-Content-Type-Options', value: 'nosniff'},

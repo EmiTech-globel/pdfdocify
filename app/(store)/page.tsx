@@ -8,6 +8,7 @@ import HeroIntro from '@/components/HeroIntro'
 import AddToCart from '@/components/AddToCart'
 export default async function Home() {
   const [s, products, bundles] = await Promise.all([q<Settings>(settingsQ), q<Prod[]>(productsQ), q<Bundle[]>(bundlesQ)])
+  const hero = products.find((p) => p.coverUrl) ?? products[0]
   const feat = bundles.find((b) => b.featured)
   const worth = feat ? feat.items.reduce((n, p) => n + p.price, 0) : 0
   return (
@@ -19,7 +20,7 @@ export default async function Home() {
           <p data-intro className="mute" style={{fontSize: 19, maxWidth: 520}}>{s?.heroSubtitle}</p>
           <div data-intro><Link href="#guides" className="btn">Browse all guides</Link></div>
         </HeroIntro>
-        <HeroScene title={products[0]?.title ?? s?.name ?? 'Your guide'} color={products[0]?.coverColor} />
+        <HeroScene title={hero?.title ?? s?.name ?? 'Your guide'} color={hero?.coverColor} image={hero?.coverUrl} />
       </section>
       {!!s?.trust?.length && <div className="strip"><div className="wrap row">{s.trust.map((t) => <span key={t}>{t}</span>)}</div></div>}
       <section id="guides" className="wrap">
