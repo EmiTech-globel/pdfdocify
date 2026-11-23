@@ -723,7 +723,7 @@ index 0000000..7676d98
 +  )
 +}
 diff --git a/components/Header.tsx b/components/Header.tsx
-index 0bd61b6..a824637 100644
+index 6678d45..02fe748 100644
 --- a/components/Header.tsx
 +++ b/components/Header.tsx
 @@ -1,13 +1,16 @@
@@ -775,9 +775,9 @@ index 0bd61b6..a824637 100644
 +    gsap.fromTo(menuRef.current.querySelectorAll('li'), {autoAlpha: 0, x: -10}, {autoAlpha: 1, x: 0, duration: 0.3, stagger: 0.05, delay: 0.05, ease: 'power2.out'})
 +  }, {dependencies: [open]})
    const current = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
-   const link = 'no-underline'
+   const link = 'no-underline transition-colors hover:text-accent'
  
-@@ -51,6 +72,7 @@ export default function Header({name}: {name: string}) {
+@@ -58,6 +79,7 @@ export default function Header({name}: {name: string}) {
            <div className="flex items-center gap-3">
              {mounted && <SignedIn><UserButton userProfileMode="navigation" userProfileUrl="/account" /></SignedIn>}
              <Link
@@ -785,7 +785,7 @@ index 0bd61b6..a824637 100644
                href="/cart"
                aria-label={`Cart, ${n} ${n === 1 ? 'item' : 'items'}`}
                className="inline-flex items-center gap-2 rounded-lg bg-accent px-3.5 py-2.5 font-semibold text-white no-underline transition hover:text-white hover:brightness-110 sm:px-[18px]"
-@@ -73,7 +95,7 @@ export default function Header({name}: {name: string}) {
+@@ -80,7 +102,7 @@ export default function Header({name}: {name: string}) {
        </div>
  
        {open && (
