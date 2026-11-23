@@ -1,5 +1,6 @@
 'use client'
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
+import gsap from 'gsap'
 import {Check} from 'lucide-react'
 import {useCart, type Line} from '@/store/cart'
 
@@ -12,6 +13,7 @@ const variants = {
 export default function AddToCart({line, label = 'Add to cart', variant = 'sm'}: {line: Line; label?: string; variant?: keyof typeof variants}) {
   const add = useCart((s) => s.add)
   const [done, setDone] = useState(false)
+  const btn = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (!done) return
     const t = setTimeout(() => setDone(false), 2000)
@@ -20,7 +22,12 @@ export default function AddToCart({line, label = 'Add to cart', variant = 'sm'}:
   return (
     <button
       type="button"
-      onClick={() => { add(line); setDone(true) }}
+      ref={btn}
+      onClick={() => {
+        add(line)
+        setDone(true)
+        if (btn.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) gsap.fromTo(btn.current, {scale: 0.94}, {scale: 1, duration: 0.45, ease: 'back.out(4)'})
+      }}
       className={`inline-flex items-center justify-center gap-2 whitespace-nowrap border-0 bg-accent font-semibold text-white transition hover:brightness-110 ${variants[variant]}`}
     >
       {done ? <><Check size={16} aria-hidden="true" />Added</> : label}

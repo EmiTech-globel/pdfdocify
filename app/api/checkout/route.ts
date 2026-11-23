@@ -10,7 +10,7 @@ import {env} from '@/lib/env'
 
 const body = z.object({items: z.array(z.object({type: z.enum(['product', 'bundle']), slug: z.string().regex(/^[a-z0-9-]{1,80}$/)})).min(1).max(20)})
 type Row = {title: string; slug: string; price: number}
-type BundleRow = {title: string; slug: string; price: number; items: Row[] | null}
+type BundleRow = {title: string; slug: string; price: number; items: (Row & {active?: boolean} | null)[] | null}
 const err = (error: string, status: number) => NextResponse.json({error}, {status})
 
 export async function POST(req: Request) {
@@ -28,13 +28,17 @@ export async function POST(req: Request) {
   // Prices come from Sanity on the server. Anything the browser sends about price is ignored.
   const [products, bundles] = await Promise.all([
     q<Row[]>(`*[_type=="product"&&active==true&&slug.current in $s]{title,price,"slug":slug.current}`, {s: pSlugs}),
-    q<BundleRow[]>(`*[_type=="bundle"&&active==true&&slug.current in $s]{title,price,"slug":slug.current,"items":products[active==true]->{title,price,"slug":slug.current}}`, {s: bSlugs}),
+    q<BundleRow[]>(`*[_type=="bundle"&&active==true&&slug.current in $s]{title,price,"slug":slug.current,"items":products[]->{title,price,active,"slug":slug.current}}`, {s: bSlugs}),
   ])
   if (products.length !== pSlugs.length || bundles.length !== bSlugs.length) return err('item_unavailable', 400)
 
   const grant = new Map<string, string>()
   products.forEach((p) => grant.set(p.slug, p.title))
-  bundles.forEach((b) => (b.items ?? []).forEach((p) => grant.set(p.slug, p.title)))
+  // Resolve each bundle's guides first, then drop inactive or deleted ones.
+  const liveItems = (b: BundleRow) => (b.items ?? []).filter((p): p is Row & {active?: boolean} => !!p && p.active === true)
+  if (bundles.some((b) => liveItems(b).length === 0)) return err('item_unavailable', 400)
+  bundles.forEach((b) => liveItems(b).forEach((p) => grant.set(p.slug, p.title)))
+  if (!grant.size) return err('item_unavailable', 400)
   const total = [...products, ...bundles].reduce((n, x) => n + x.price, 0)
   const amountKobo = Math.round(total * 100)
   if (!amountKobo) return err('bad_total', 400)
