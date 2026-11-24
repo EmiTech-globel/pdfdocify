@@ -133,7 +133,7 @@ export default function ReviewForm({slug, defaultName}: {slug: string; defaultNa
               onMouseEnter={() => setHover(n)}
               className="rounded border-0 bg-transparent p-0.5"
             >
-              <Star size={30} aria-hidden="true" className={n <= shown ? 'fill-accent text-accent' : 'fill-transparent text-field'} />
+              <Star size={30} aria-hidden="true" className={n <= shown ? 'fill-star text-star' : 'fill-transparent text-star/40'} />
             </button>
           ))}
         </div>

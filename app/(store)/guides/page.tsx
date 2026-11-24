@@ -4,6 +4,7 @@ import {P, type Prod} from '@/lib/queries'
 import ProductCard from '@/components/ProductCard'
 import GuideFilters from '@/components/GuideFilters'
 import Reveal from '@/components/Reveal'
+import {ratingsBySlug} from '@/lib/reviews'
 import {btnPrimary, eyebrow, wrap} from '@/lib/ui'
 
 export const metadata = {title: 'All guides'}
@@ -49,6 +50,7 @@ export default async function Guides({searchParams}: {searchParams: Promise<SP>}
     {from, to: from + PER_PAGE, ...(category ? {category} : {}), ...(words.length ? {m: words.map((w) => `${w}*`)} : {})},
   )
   const pages = Math.max(1, Math.ceil(total / PER_PAGE))
+  const ratings = await ratingsBySlug().catch(() => ({} as Record<string, {avg: number; count: number}>))
   const state = {q: term, category, sort}
   const pill = (active: boolean) => `rounded-full px-4 py-2 text-sm font-medium no-underline transition ${active ? 'bg-accent text-white hover:text-white' : 'bg-card text-ink hover:bg-line hover:text-ink'}`
 
@@ -80,7 +82,7 @@ export default async function Guides({searchParams}: {searchParams: Promise<SP>}
           </div>
         ) : (
           <Reveal key={`${term}|${category}|${sort}|${page}`} className="grid grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] gap-6">
-            {items.map((p) => <ProductCard key={p._id} p={p} />)}
+            {items.map((p) => <ProductCard key={p._id} p={p} rating={ratings[p.slug]} />)}
           </Reveal>
         )}
 

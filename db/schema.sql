@@ -46,3 +46,21 @@ create table if not exists review_media (
 );
 create index if not exists reviews_product_idx on reviews (product_slug, status, created_at desc);
 create index if not exists review_media_review_idx on review_media (review_id);
+-- Admin panel: refunds and an audit trail.
+alter table orders drop constraint if exists orders_status_check;
+alter table orders add constraint orders_status_check check (status in ('pending','paid','failed','refunded'));
+alter table orders add column if not exists refunded_at timestamptz;
+create table if not exists admin_log (
+  id bigint generated always as identity primary key,
+  admin_user_id text not null,
+  action text not null,
+  target text,
+  detail jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_log_created_idx on admin_log (created_at desc);
+create index if not exists orders_created_idx on orders (created_at desc);
+create index if not exists orders_status_idx on orders (status);
+-- Human-friendly order numbers (TRX-0001). Existing orders are numbered automatically, oldest first.
+alter table orders add column if not exists order_no bigint generated always as identity;
+create unique index if not exists orders_order_no_idx on orders (order_no);

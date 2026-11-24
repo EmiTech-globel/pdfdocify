@@ -3,6 +3,7 @@ import {Check} from 'lucide-react'
 import {auth} from '@clerk/nextjs/server'
 import {fulfil} from '@/lib/fulfil'
 import {libraryFor} from '@/lib/library'
+import {orderNoByReference} from '@/lib/orders'
 import ClearCart from '@/components/ClearCart'
 import LibraryList from '@/components/LibraryList'
 import HelpBand from '@/components/HelpBand'
@@ -15,6 +16,7 @@ export default async function Success({searchParams}: {searchParams: Promise<{re
   const ok = typeof reference === 'string' && /^trx_[a-f0-9]{32}$/.test(reference) && (await fulfil(reference))
   const {userId} = await auth()
   const guides = ok && userId ? await libraryFor(userId) : []
+  const orderNo = ok && reference ? await orderNoByReference(reference).catch(() => '') : ''
   return (
     <div className={`${wrap} pb-[72px] pt-10 sm:pt-14`}>
       {ok ? (
@@ -24,7 +26,7 @@ export default async function Success({searchParams}: {searchParams: Promise<{re
             <span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-accent text-accent"><Check size={22} aria-hidden="true" /></span>
             <div>
               <h1 className="font-heading text-[clamp(26px,4vw,34px)] font-bold leading-tight tracking-[-0.02em]">Payment received. Thank you.</h1>
-              <div className="text-mute">Your guides are ready to download below and stay in My library.</div>
+              <div className="text-mute">{orderNo && `Order ${orderNo}. `}Your guides are ready to download below and stay in My library.</div>
             </div>
           </div>
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">

@@ -3,12 +3,15 @@ import {q} from '@/lib/sanity'
 import {settingsQ, productsQ, bundlesQ, naira, type Settings, type Prod, type Bundle} from '@/lib/queries'
 import ProductCard from '@/components/ProductCard'
 import Reveal from '@/components/Reveal'
+import {ChevronRight} from 'lucide-react'
+import {ratingsBySlug} from '@/lib/reviews'
 import HeroScene from '@/components/HeroScene'
 import HeroIntro from '@/components/HeroIntro'
 import {btnPrimary, eyebrow, wrap} from '@/lib/ui'
 
 export default async function Home() {
   const [s, products, bundles] = await Promise.all([q<Settings>(settingsQ), q<Prod[]>(productsQ), q<Bundle[]>(bundlesQ)])
+  const ratings = await ratingsBySlug().catch(() => ({} as Record<string, {avg: number; count: number}>))
   const hero = products.find((p) => p.coverUrl) ?? products[0]
   const feat = bundles.find((b) => b.featured)
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))] as string[]
@@ -39,19 +42,22 @@ export default async function Home() {
       )}
 
       <section id="guides" className={`${wrap} pb-6 pt-14 sm:pt-[72px]`}>
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className={`flex items-end justify-between gap-4 ${categories.length > 1 ? 'mb-5' : 'mb-8'}`}>
           <h2 className="font-heading text-[32px] font-bold tracking-[-0.02em] sm:text-[38px]">All guides</h2>
-          {categories.length > 1 && (
-            <nav aria-label="Browse by category" className="flex flex-wrap gap-2.5 text-sm font-medium">
-              <Link href="/guides" className="rounded-full bg-accent px-4 py-2 text-white no-underline hover:text-white">All</Link>
-              {categories.map((c) => (
-                <Link key={c} href={`/guides?category=${encodeURIComponent(c)}`} className="rounded-full bg-card px-4 py-2 text-ink no-underline hover:bg-line hover:text-ink">{c}</Link>
-              ))}
-            </nav>
-          )}
+          <Link href="/guides" className="inline-flex items-center gap-1 whitespace-nowrap pb-1.5 font-semibold no-underline">
+            View all<ChevronRight size={18} aria-hidden="true" />
+          </Link>
         </div>
+        {categories.length > 1 && (
+          <nav aria-label="Browse by category" className="mb-8 flex flex-wrap gap-2.5 text-sm font-medium">
+            <Link href="/guides" className="rounded-full bg-accent px-4 py-2 text-white no-underline hover:text-white">All</Link>
+            {categories.map((c) => (
+              <Link key={c} href={`/guides?category=${encodeURIComponent(c)}`} className="rounded-full bg-card px-4 py-2 text-ink no-underline hover:bg-line hover:text-ink">{c}</Link>
+            ))}
+          </nav>
+        )}
         <Reveal className="grid grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] gap-6">
-          {latest.map((p) => <ProductCard key={p._id} p={p} />)}
+          {latest.map((p) => <ProductCard key={p._id} p={p} rating={ratings[p.slug]} />)}
         </Reveal>
         {products.length > latest.length && (
           <div className="mt-8 flex justify-center">

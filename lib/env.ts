@@ -12,4 +12,10 @@ const schema = z.object({
   R2_BUCKET: z.string().min(1),
 })
 let cached: z.infer<typeof schema> | undefined
-export const env = () => (cached ??= schema.parse(process.env))
+export const env = () => {
+  if (cached) return cached
+  const r = schema.safeParse(process.env)
+  // Names only, never values, so this is safe to read in Vercel logs.
+  if (!r.success) throw new Error(`Missing or invalid environment variables: ${[...new Set(r.error.issues.map((i) => i.path.join('.')))].join(', ')}`)
+  return (cached = r.data)
+}

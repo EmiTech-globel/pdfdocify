@@ -13,6 +13,8 @@ const messages: Record<string, string> = {
   item_unavailable: 'One of these items is no longer available. Remove it and try again.',
   payment_unavailable: 'Payment could not start. Try again in a moment.',
   email_required: 'Your account needs an email address before you can pay.',
+  forbidden: 'This web address is not allowed to start a payment. The site owner needs to check the site URL setting.',
+  server_error: 'The server could not start the payment. The site owner can find the reason in the server logs.',
 }
 
 export default function Cart() {
@@ -34,7 +36,7 @@ export default function Cart() {
     const data = await res.json().catch(() => ({}))
     if (res.ok && data.url) return void (window.location.href = data.url)
     if (data.error === 'already_owned') setOwned(true)
-    else setError(messages[data.error] ?? 'Something went wrong. Try again.')
+    else setError(messages[data.error] ?? `Something went wrong. Try again. (${data.error ?? `status ${res.status}`})`)
     setBusy(false)
   }
 

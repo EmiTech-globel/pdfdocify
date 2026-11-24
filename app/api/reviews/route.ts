@@ -3,7 +3,7 @@ import {auth} from '@clerk/nextjs/server'
 import {revalidatePath} from 'next/cache'
 import {z} from 'zod'
 import {db} from '@/lib/db'
-import {env} from '@/lib/env'
+import {sameOrigin} from '@/lib/origin'
 import {allow} from '@/lib/limit'
 import {deleteObject, headObject, moveObject} from '@/lib/r2'
 import {myReview, ownsGuide} from '@/lib/reviews'
@@ -23,7 +23,7 @@ const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // Step 2: store the review. Media is checked in R2 before it is accepted; reviews wait for approval.
 export async function POST(req: Request) {
-  if (req.headers.get('origin') !== env().NEXT_PUBLIC_SITE_URL) return err('forbidden', 403)
+  if (!sameOrigin(req)) return err('forbidden', 403)
   const {userId} = await auth()
   if (!userId) return err('auth', 401)
   if (!(await allow(`review:${userId}`))) return err('rate_limited', 429)

@@ -33,8 +33,19 @@ export async function approvedReviews(slug: string, limit = 20) {
 }
 
 export async function ratingSummary(slug: string) {
-  const [row] = await db()`select coalesce(avg(rating), 0)::float as avg, count(*)::int as count from reviews where product_slug = ${slug} and status = 'approved'`
-  return {avg: Number(row?.avg ?? 0), count: Number(row?.count ?? 0)}
+  const rows = await db()`select rating, count(*)::int as n from reviews where product_slug = ${slug} and status = 'approved' group by rating`
+  const dist: Record<number, number> = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+  let count = 0, sum = 0
+  for (const r of rows) { const star = Number(r.rating), n = Number(r.n); dist[star] = n; count += n; sum += star * n }
+  return {avg: count ? sum / count : 0, count, dist}
+}
+
+// Average rating and count for every guide that has approved reviews, keyed by slug.
+export async function ratingsBySlug() {
+  const rows = await db()`select product_slug, avg(rating)::float as avg, count(*)::int as count from reviews where status = 'approved' group by product_slug`
+  const out: Record<string, {avg: number; count: number}> = {}
+  for (const r of rows) out[r.product_slug as string] = {avg: Number(r.avg), count: Number(r.count)}
+  return out
 }
 
 export async function myReview(slug: string, userId: string) {

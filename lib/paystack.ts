@@ -22,3 +22,10 @@ export function validSignature(raw: string, sig: string | null) {
   const given = Buffer.from(sig)
   return expected.length === given.length && crypto.timingSafeEqual(expected, given)
 }
+// Full refund of a transaction. Paystack processes it asynchronously and the money returns to the customer's original payment method.
+export async function refund(reference: string) {
+  const r = await fetch(`${base}/refund`, {method: 'POST', headers: headers(), cache: 'no-store', body: JSON.stringify({transaction: reference})})
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.status) throw new Error(typeof j.message === 'string' ? j.message : 'paystack_refund_failed')
+  return j.data as {status?: string}
+}

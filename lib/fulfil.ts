@@ -5,7 +5,7 @@ import {verify} from './paystack'
 export async function fulfil(reference: string) {
   const sql = db()
   const [order] = await sql`select id, clerk_user_id, amount_kobo, currency, status from orders where reference = ${reference}`
-  if (!order) return false
+  if (!order || order.status === 'refunded') return false
   if (order.status !== 'paid') {
     const tx = await verify(reference)
     if (!tx || tx.status !== 'success' || Number(tx.amount) !== Number(order.amount_kobo) || tx.currency !== order.currency) return false

@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {auth} from '@clerk/nextjs/server'
 import crypto from 'node:crypto'
 import {z} from 'zod'
-import {env} from '@/lib/env'
+import {sameOrigin} from '@/lib/origin'
 import {allow} from '@/lib/limit'
 import {presignPut} from '@/lib/r2'
 import {myReview, ownsGuide} from '@/lib/reviews'
@@ -16,7 +16,7 @@ const err = (error: string, status: number) => NextResponse.json({error}, {statu
 
 // Step 1 of posting a review with media: validate the files and hand back short-lived upload URLs.
 export async function POST(req: Request) {
-  if (req.headers.get('origin') !== env().NEXT_PUBLIC_SITE_URL) return err('forbidden', 403)
+  if (!sameOrigin(req)) return err('forbidden', 403)
   const {userId} = await auth()
   if (!userId) return err('auth', 401)
   if (!(await allow(`review-upload:${userId}`))) return err('rate_limited', 429)

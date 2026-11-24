@@ -11,6 +11,7 @@
   --color-field: #B9C2D3;
   --color-accent: #6B63C9;
   --color-accent-soft: #F4F5FF;
+  --color-star: #E3A21A;
 }
 @theme inline {
   --font-heading: var(--font-display), Arial, sans-serif;

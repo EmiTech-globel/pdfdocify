@@ -5,7 +5,7 @@ export type CoverSize = 'card' | 'lg' | 'mini' | 'thumb' | 'lib'
 const box: Record<CoverSize, string> = {
   card: 'w-full h-[220px]',
   lg: 'w-[340px] max-w-full aspect-[340/460]',
-  mini: 'w-[90px] h-[124px] shrink-0',
+  mini: 'min-w-0 max-w-[90px] flex-1 aspect-[90/124]',
   thumb: 'w-[72px] h-[96px] shrink-0',
   lib: 'w-[84px] h-[112px] shrink-0',
 }

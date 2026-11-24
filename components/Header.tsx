@@ -54,7 +54,7 @@ export default function Header({name}: {name: string}) {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-5 py-[18px] sm:px-8">
-        <Link href="/" className="font-heading text-[22px] font-bold no-underline">{name}</Link>
+        <Link href="/" className="shrink-0 font-heading text-[20px] font-bold no-underline sm:text-[22px]">{name}</Link>
 
         <div className="flex items-center gap-4 sm:gap-7">
           <nav className="hidden items-center gap-7 font-medium md:flex" aria-label="Main">
@@ -76,16 +76,17 @@ export default function Header({name}: {name: string}) {
             )}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {mounted && <SignedIn><UserButton userProfileMode="navigation" userProfileUrl="/account" /></SignedIn>}
             <Link
               ref={cartRef}
               href="/cart"
               aria-label={`Cart, ${n} ${n === 1 ? 'item' : 'items'}`}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-3.5 py-2.5 font-semibold text-white no-underline transition hover:text-white hover:brightness-110 sm:px-[18px]"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-accent px-3 py-2.5 font-semibold text-white no-underline transition hover:text-white hover:brightness-110 sm:px-[18px]"
             >
               <ShoppingCart size={18} aria-hidden="true" />
-              Cart ({n})
+              <span className="hidden sm:inline">Cart ({n})</span>
+              <span aria-hidden="true" className="min-w-5 rounded-full bg-white px-1.5 text-center text-xs font-bold leading-5 text-accent sm:hidden">{n}</span>
             </Link>
             <button
               type="button"

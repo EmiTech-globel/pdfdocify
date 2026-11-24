@@ -7,14 +7,15 @@ import {db} from '@/lib/db'
 import {initialize} from '@/lib/paystack'
 import {allow} from '@/lib/limit'
 import {env} from '@/lib/env'
+import {sameOrigin} from '@/lib/origin'
 
 const body = z.object({items: z.array(z.object({type: z.enum(['product', 'bundle']), slug: z.string().regex(/^[a-z0-9-]{1,80}$/)})).min(1).max(20)})
 type Row = {title: string; slug: string; price: number}
 type BundleRow = {title: string; slug: string; price: number; items: (Row & {active?: boolean} | null)[] | null}
 const err = (error: string, status: number) => NextResponse.json({error}, {status})
 
-export async function POST(req: Request) {
-  if (req.headers.get('origin') !== env().NEXT_PUBLIC_SITE_URL) return err('forbidden', 403)
+async function handle(req: Request) {
+  if (!sameOrigin(req)) return err('forbidden', 403)
   const {userId} = await auth()
   if (!userId) return err('auth', 401)
   if (!(await allow(`checkout:${userId}`))) return err('rate_limited', 429)
@@ -56,5 +57,15 @@ export async function POST(req: Request) {
   } catch {
     await sql`update orders set status = 'failed' where id = ${order.id}`
     return err('payment_unavailable', 502)
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    return await handle(req)
+  } catch (e) {
+    // Shows up in Vercel > Logs with the real reason (for example a missing environment variable).
+    console.error('[checkout]', e instanceof Error ? e.message : e)
+    return err('server_error', 500)
   }
 }
