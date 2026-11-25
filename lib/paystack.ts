@@ -14,7 +14,7 @@ export async function verify(reference: string) {
   const r = await fetch(`${base}/transaction/verify/${encodeURIComponent(reference)}`, {headers: headers(), cache: 'no-store'})
   const j = await r.json()
   if (!r.ok || !j.status) return null
-  return j.data as {status: string; amount: number; currency: string}
+  return j.data as {status: string; amount: number; currency: string; gateway_response?: string}
 }
 export function validSignature(raw: string, sig: string | null) {
   if (!sig) return false
