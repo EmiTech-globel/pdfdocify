@@ -34,7 +34,7 @@ export default function HeroScene({title, color, image}: {title: string; color?:
     })
   }, {scope: ref})
   return (
-    <div ref={ref} className="relative h-[clamp(300px,42vw,460px)] flex-[1_1_360px]" role="img" aria-label={`Cover of ${title}`}>
+    <div ref={ref} className="relative h-[clamp(300px,42vw,460px)] min-w-0 flex-[1_1_360px]" role="img" aria-label={`Cover of ${title}`}>
       {webgl === false && <div className="flex justify-center"><Cover size="lg" title={title} color={color} /></div>}
       {webgl && <Hero3D title={title} color={color ?? '#6B63C9'} image={image} still={still} paused={!visible} />}
     </div>

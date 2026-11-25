@@ -27,6 +27,7 @@
     font-family: var(--font-body), Arial, sans-serif;
     font-size: 16px;
     line-height: 1.6;
+    overflow-x: clip; /* safety net: nothing can create a sideways scrollbar */
     background-color: #fff;
     background-repeat: no-repeat;
     background-image:

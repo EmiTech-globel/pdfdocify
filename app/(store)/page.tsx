@@ -21,7 +21,7 @@ export default async function Home() {
   return (
     <>
       <section className={`${wrap} flex flex-wrap items-center gap-12 pb-14 pt-12 sm:pt-[72px]`}>
-        <HeroIntro className="flex flex-[1_1_480px] flex-col gap-5">
+        <HeroIntro className="flex min-w-0 flex-[1_1_480px] flex-col gap-5">
           <span data-intro className={eyebrow}>{s?.tagline}</span>
           <h1 data-intro className="font-heading text-[clamp(36px,5vw,56px)] font-bold leading-[1.05] tracking-[-0.025em]">{s?.heroTitle}</h1>
           <p data-intro className="max-w-[520px] text-[19px] text-body">{s?.heroSubtitle}</p>

@@ -41,12 +41,12 @@ export default async function Guide({params}: {params: Promise<{slug: string}>})
       </nav>
 
       <section className={`${wrap} flex flex-wrap gap-x-14 gap-y-10 pb-14 pt-6`}>
-        <HeroIntro className="flex flex-[1_1_380px] flex-col items-center gap-4">
-          <div data-intro className="flex w-full justify-center">
+        <HeroIntro className="flex min-w-0 flex-[1_1_380px] flex-col items-center gap-4">
+          <div data-intro className="flex w-full min-w-0 justify-center">
             <Cover size="lg" title={p.title} color={p.coverColor} image={p.coverUrl} className="shadow-[0_40px_80px_rgba(107,99,201,0.26)]" />
           </div>
         </HeroIntro>
-        <HeroIntro className="flex flex-[1_1_440px] flex-col gap-5">
+        <HeroIntro className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
           <div data-intro className="text-sm text-mute">{[p.category, p.version ? `Version ${p.version}` : null].filter(Boolean).join(' / ')}</div>
           <h1 data-intro className="font-heading text-[clamp(30px,5vw,44px)] font-bold leading-[1.08] tracking-[-0.02em]">{p.headline || p.title}</h1>
           <a data-intro href="#reviews" className="flex items-center gap-2 text-sm text-body no-underline">

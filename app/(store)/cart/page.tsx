@@ -13,6 +13,7 @@ const messages: Record<string, string> = {
   item_unavailable: 'One of these items is no longer available. Remove it and try again.',
   payment_unavailable: 'Payment could not start. Try again in a moment.',
   email_required: 'Your account needs an email address before you can pay.',
+  bad_price: 'A price in this cart is not a whole number of naira, so it cannot be charged. The site owner needs to fix it in Studio (for example 7500, not 7499.9).',
   forbidden: 'This web address is not allowed to start a payment. The site owner needs to check the site URL setting.',
   server_error: 'The server could not start the payment. The site owner can find the reason in the server logs.',
 }

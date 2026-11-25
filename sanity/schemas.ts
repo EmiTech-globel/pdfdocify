@@ -19,7 +19,7 @@ const product = defineType({name: 'product', title: 'Guide', type: 'document', f
   defineField({name: 'headline', title: 'Product page headline', description: 'Shown as the big heading on the guide page. Falls back to the title.', type: 'string'}),
   defineField({name: 'summary', type: 'text', rows: 2}),
   defineField({name: 'author', type: 'string'}),
-  defineField({name: 'price', title: 'Price (NGN)', type: 'number', validation: (r) => r.required().min(100)}),
+  defineField({name: 'price', title: 'Price (NGN)', description: 'Whole naira only, for example 7500. Prices with kobo (7499.9) are not accepted.', type: 'number', validation: (r) => r.required().min(100).integer()}),
   defineField({name: 'pages', type: 'number'}),
   defineField({name: 'fileSizeMb', title: 'PDF size (MB)', type: 'number'}),
   defineField({name: 'category', type: 'string', description: 'Free text. Use identical spelling across guides.'}),
@@ -38,7 +38,7 @@ const bundle = defineType({name: 'bundle', title: 'Bundle', type: 'document', fi
   defineField({name: 'title', type: 'string', validation: (r) => r.required()}), slug(),
   defineField({name: 'summary', type: 'text', rows: 2}),
   defineField({name: 'products', title: 'Guides in this bundle', type: 'array', of: [{type: 'reference', to: [{type: 'product'}]}], validation: (r) => r.min(2)}),
-  defineField({name: 'price', title: 'Bundle price (NGN)', type: 'number', validation: (r) => r.required().min(100)}),
+  defineField({name: 'price', title: 'Bundle price (NGN)', description: 'Whole naira only, for example 15900.', type: 'number', validation: (r) => r.required().min(100).integer()}),
   defineField({name: 'featured', title: 'Show on home page', type: 'boolean'}),
   active(),
 ]})
