@@ -20,8 +20,10 @@ export async function fulfil(reference: string): Promise<FulfilResult> {
       const processing = ['ongoing', 'pending', 'processing', 'queued'].includes(tx.status)
       return {ok: false, reason: processing ? 'processing' : tx.status === 'abandoned' ? 'abandoned' : 'failed', status: tx.status}
     }
-    if (Number(tx.amount) !== Number(order.amount_kobo) || tx.currency !== order.currency) {
-      console.error('[fulfil] amount or currency mismatch', {reference, paystack: {amount: tx.amount, currency: tx.currency}, order: {amount: order.amount_kobo, currency: order.currency}})
+    // If Paystack's fee is passed on to the customer, data.amount is price + fee. data.requested_amount is the price we asked for.
+    const requested = tx.requested_amount != null ? Number(tx.requested_amount) : Number(tx.amount)
+    if (requested !== Number(order.amount_kobo) || Number(tx.amount) < requested || tx.currency !== order.currency) {
+      console.error('[fulfil] amount or currency mismatch', {reference, paystack: {amount: tx.amount, requested: tx.requested_amount, currency: tx.currency}, order: {amount: order.amount_kobo, currency: order.currency}})
       return {ok: false, reason: 'mismatch'}
     }
     await sql`update orders set status = 'paid', paid_at = now() where id = ${order.id} and status = 'pending'`

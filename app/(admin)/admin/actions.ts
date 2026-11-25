@@ -6,6 +6,7 @@ import {db} from '@/lib/db'
 import {isAdmin} from '@/lib/admin'
 import {logAdmin} from '@/lib/admin-data'
 import {refund} from '@/lib/paystack'
+import {fulfil} from '@/lib/fulfil'
 import {q} from '@/lib/sanity'
 
 const uuid = /^[0-9a-f-]{36}$/
@@ -64,4 +65,17 @@ export async function refundOrder(formData: FormData) {
   await logAdmin(admin, 'refund_order', `${id}`, {reference: order.reference, mode: note})
   revalidatePath('/admin/orders'); revalidatePath(`/admin/orders/${id}`); revalidatePath('/admin')
   redirect(`/admin/orders/${id}?done=refunded`)
+}
+
+// For an order stuck on pending: ask Paystack again. If it was paid, this marks the order paid and grants access.
+export async function recheckPayment(formData: FormData) {
+  const admin = await adminId()
+  const id = str(formData, 'id')
+  if (!uuid.test(id)) throw new Error('bad input')
+  const [order] = await db()`select reference, status from orders where id = ${id}`
+  if (!order) redirect('/admin/orders')
+  const result = await fulfil(order.reference as string)
+  await logAdmin(admin, 'recheck_payment', id, {reference: order.reference, ok: result.ok, reason: result.ok ? null : result.reason})
+  revalidatePath('/admin/orders'); revalidatePath(`/admin/orders/${id}`); revalidatePath('/admin')
+  redirect(result.ok ? `/admin/orders/${id}?done=rechecked` : `/admin/orders/${id}?error=recheck&reason=${result.reason}`)
 }

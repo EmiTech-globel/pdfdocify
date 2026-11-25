@@ -3,17 +3,19 @@ import {notFound} from 'next/navigation'
 import {getOrder} from '@/lib/admin-data'
 import {formatOrderNo} from '@/lib/orders'
 import {PageHead, StatusBadge, Table, btnCls, card, ngn, td, th, when} from '@/components/admin/ui'
-import {grantAccess, refundOrder, revokeAccess} from '../../actions'
+import {grantAccess, recheckPayment, refundOrder, revokeAccess} from '../../actions'
 
 export const metadata = {title: 'Order'}
 
 const notices: Record<string, [string, boolean]> = {
   granted: ['Access granted.', false], revoked: ['Access removed.', false], refunded: ['Order marked as refunded and access removed.', false],
   confirm: ['Tick the confirmation box first.', true], state: ['Only paid orders can be refunded.', true],
+  rechecked: ['Paystack confirmed this payment. The order is now paid and access was granted.', false],
+  recheck: ['Paystack did not confirm this payment.', true],
   paystack: ['Paystack did not accept the refund. Nothing was changed. Check the Paystack dashboard, or the server logs for the reason.', true],
 }
 
-export default async function OrderPage({params, searchParams}: {params: Promise<{id: string}>; searchParams: Promise<{done?: string; error?: string}>}) {
+export default async function OrderPage({params, searchParams}: {params: Promise<{id: string}>; searchParams: Promise<{done?: string; error?: string; reason?: string}>}) {
   const {id} = await params
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound()
   const [data, sp] = [await getOrder(id), await searchParams]
@@ -25,7 +27,17 @@ export default async function OrderPage({params, searchParams}: {params: Promise
       <PageHead title={`Order ${formatOrderNo(order.order_no)}`.trim()} sub={String(order.reference)}>
         <Link href="/admin/orders" className="text-sm font-semibold">Back to orders</Link>
       </PageHead>
-      {notice && <div role={notice[1] ? 'alert' : 'status'} className={`mb-5 rounded-lg px-4 py-3 text-sm ${notice[1] ? 'bg-red-100 text-red-700' : 'bg-accent/10 text-accent'}`}>{notice[0]}</div>}
+      {notice && <div role={notice[1] ? 'alert' : 'status'} className={`mb-5 rounded-lg px-4 py-3 text-sm ${notice[1] ? 'bg-red-100 text-red-700' : 'bg-accent/10 text-accent'}`}>{notice[0]}{sp.error === 'recheck' && sp.reason ? ` Reason: ${sp.reason.replace(/_/g, ' ')}.` : ''}</div>}
+
+      {(order.status === 'pending' || order.status === 'failed') && (
+        <div className={`${card} mb-6 flex flex-wrap items-center justify-between gap-4`}>
+          <div className="min-w-0 flex-[1_1_320px]">
+            <h2 className="font-heading text-lg font-bold">Payment not confirmed</h2>
+            <p className="text-sm text-mute">If this customer paid in Paystack but the order is still {order.status}, ask Paystack again. If it was paid, the order is marked paid and the guides are unlocked.</p>
+          </div>
+          <form action={recheckPayment}><input type="hidden" name="id" value={order.id} /><button className={`${btnCls} bg-accent text-white`}>Re-check with Paystack</button></form>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-start gap-6">
         <div className={`${card} min-w-0 flex-[1_1_320px]`}>
