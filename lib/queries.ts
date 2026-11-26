@@ -10,4 +10,4 @@ export const productsQ = `*[_type=="product"&&active==true]|order(coalesce(sort,
 export const productQ = `*[_type=="product"&&active==true&&slug.current==$slug][0]{${P},body,chapters,faq}`
 export const bundlesQ = `*[_type=="bundle"&&active==true]|order(featured desc,_createdAt asc){_id,title,"slug":slug.current,summary,price,featured,"items":products[]->{${P}}}`
 export const pageQ = `*[_type=="page"&&slug.current==$slug][0]{title,body,_updatedAt}`
-export const naira = (n: number) => '₦' + n.toLocaleString('en-NG')
+export const naira = (n: number) => '₦' + n.toLocaleString('en-NG', {minimumFractionDigits: Number.isInteger(Math.round(n * 100) / 100) && Math.round(n * 100) % 100 === 0 ? 0 : 2, maximumFractionDigits: 2})

@@ -41,8 +41,6 @@ async function handle(req: Request) {
   bundles.forEach((b) => liveItems(b).forEach((p) => grant.set(p.slug, p.title)))
   if (!grant.size) return err('item_unavailable', 400)
   const total = [...products, ...bundles].reduce((n, x) => n + x.price, 0)
-  // Prices are whole naira. A price like 7499.9 made the amount Paystack confirmed differ from ours, so refuse it up front.
-  if (!Number.isInteger(total)) { console.error('[checkout] non-integer total', total); return err('bad_price', 400) }
   const amountKobo = Math.round(total * 100)
   if (!amountKobo) return err('bad_total', 400)
 

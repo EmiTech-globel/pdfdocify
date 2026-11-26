@@ -20,9 +20,15 @@ export async function fulfil(reference: string): Promise<FulfilResult> {
       const processing = ['ongoing', 'pending', 'processing', 'queued'].includes(tx.status)
       return {ok: false, reason: processing ? 'processing' : tx.status === 'abandoned' ? 'abandoned' : 'failed', status: tx.status}
     }
-    // If Paystack's fee is passed on to the customer, data.amount is price + fee. data.requested_amount is the price we asked for.
-    const requested = tx.requested_amount != null ? Number(tx.requested_amount) : Number(tx.amount)
-    if (requested !== Number(order.amount_kobo) || Number(tx.amount) < requested || tx.currency !== order.currency) {
+    // Paystack may add its fee to what the customer pays (data.amount = price + fee, data.requested_amount = price) and may round
+    // fractions of a naira, so allow one naira (100 kobo) of difference. Underpayment beyond that is still rejected.
+    const expected = Number(order.amount_kobo)
+    const charged = Number(tx.amount)
+    const slack = 100
+    const priceOk = tx.requested_amount != null
+      ? Math.abs(Number(tx.requested_amount) - expected) <= slack
+      : charged <= expected + Math.max(30000, Math.round(expected * 0.05)) // no requested_amount: the extra can only be a fee
+    if (!priceOk || charged < expected - slack || tx.currency !== order.currency) {
       console.error('[fulfil] amount or currency mismatch', {reference, paystack: {amount: tx.amount, requested: tx.requested_amount, currency: tx.currency}, order: {amount: order.amount_kobo, currency: order.currency}})
       return {ok: false, reason: 'mismatch'}
     }
