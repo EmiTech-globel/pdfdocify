@@ -22,7 +22,7 @@ const product = defineType({name: 'product', title: 'Guide', type: 'document', f
   defineField({name: 'price', title: 'Price (NGN)', description: 'In naira. Decimals are fine, for example 7499.90.', type: 'number', validation: (r) => r.required().min(50).precision(2)}),
   defineField({name: 'pages', type: 'number'}),
   defineField({name: 'fileSizeMb', title: 'PDF size (MB)', type: 'number'}),
-  defineField({name: 'category', type: 'string', description: 'Free text. Use identical spelling across guides.'}),
+  defineField({name: 'category', type: 'reference', to: [{type: 'category'}], description: 'The niche this guide belongs to. Add new niches under Category in the Studio menu.', validation: (r) => r.required()}),
   defineField({name: 'coverColor', title: 'Cover colour (hex)', type: 'string', validation: (r) => r.regex(/^#[0-9A-Fa-f]{6}$/)}),
   defineField({name: 'coverImage', title: 'Cover image', type: 'image', options: {hotspot: true}}),
   defineField({name: 'version', type: 'string', initialValue: '1.0'}),
@@ -46,4 +46,10 @@ const bundle = defineType({name: 'bundle', title: 'Bundle', type: 'document', fi
 const page = defineType({name: 'page', title: 'Page (About, Terms, Refunds, Privacy)', type: 'document', fields: [
   defineField({name: 'title', type: 'string', validation: (r) => r.required()}), slug(), body(),
 ]})
-export const schemaTypes = [siteSettings, product, bundle, page]
+const category = defineType({name: 'category', title: 'Category', type: 'document', fields: [
+  defineField({name: 'title', type: 'string', validation: (r) => r.required()}), slug(),
+  defineField({name: 'sort', title: 'Order', description: 'Lower numbers come first in menus and filters.', type: 'number'}),
+  defineField({name: 'description', type: 'text', rows: 2, description: 'Shown under the heading when visitors filter by this category.'}),
+], orderings: [{title: 'Order', name: 'order', by: [{field: 'sort', direction: 'asc'}]}]})
+
+export const schemaTypes = [siteSettings, product, category, bundle, page]

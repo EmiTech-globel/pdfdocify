@@ -178,6 +178,11 @@ const tx = c.transaction()
 
 tx.createIfNotExists({_id: 'siteSettings', _type: 'siteSettings', name: 'Trixpress', tagline: 'Digital guides, instant download', heroTitle: 'Practical PDF guides for every goal', heroSubtitle: 'Short, clear, step-by-step guides on the topics you care about. Pay once, download instantly, keep forever.', trust: ['Instant PDF delivery', 'Secure checkout', 'Free updates', 'Prices in Naira'], footerNote: 'Trixpress. Instant PDF delivery.'})
 
+const slugOf = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const catId = (name) => `category-${slugOf(name)}`
+;[...new Set(guides.map((g) => g.category))].forEach((name, i) =>
+  tx.createIfNotExists({_id: catId(name), _type: 'category', title: name, slug: {_type: 'slug', current: slugOf(name)}, sort: i + 1}))
+
 for (const g of guides) {
   const found = existing.find((e) => e.slug === g.slug) || existing.find((e) => (e.title || '').trim().toLowerCase() === g.matchTitle)
   const id = found?._id || `product-${g.slug}`
@@ -185,7 +190,7 @@ for (const g of guides) {
   tx.createIfNotExists({_id: id, _type: 'product', title: found?.title || g.title, slug: {_type: 'slug', current: found?.slug || g.slug}})
   apply(tx, id,
     {price: g.price, coverColor: g.coverColor, sort: g.sort, active: true, fileKey: `guides/${found?.slug || g.slug}.pdf`},
-    {title: g.title, headline: g.headline, summary: g.summary, category: g.category, pages: g.pages, fileSizeMb: g.fileSizeMb, version: g.version,
+    {title: g.title, headline: g.headline, summary: g.summary, category: {_type: 'reference', _ref: catId(g.category)}, pages: g.pages, fileSizeMb: g.fileSizeMb, version: g.version,
       ...(g.author ? {author: g.author} : {}),
       body: g.body.map((t, i) => para(g.slug, i, t)),
       chapters: items(g.slug, 'c', g.chapters.map(([title, blurb]) => ({title, blurb}))),

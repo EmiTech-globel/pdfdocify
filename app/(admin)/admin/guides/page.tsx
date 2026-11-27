@@ -11,13 +11,14 @@ type G = {_id: string; title: string; slug: string; price: number; active?: bool
 
 export default async function AdminGuides() {
   const [guides, sales, ratings] = await Promise.all([
-    q<G[]>(`*[_type=="product"]{_id,title,"slug":slug.current,price,active,category,pages}|order(_createdAt desc)`),
+    q<G[]>(`*[_type=="product"]{_id,title,"slug":slug.current,price,active,"category":coalesce(category->title,category),pages}|order(_createdAt desc)`),
     salesBySlug().catch(() => ({} as Record<string, number>)),
     ratingsBySlug().catch(() => ({} as Record<string, {avg: number; count: number}>)),
   ])
   return (
     <>
       <PageHead title="Guides" sub="Content, prices and PDFs are edited in the Studio. This page shows how each guide is doing.">
+        <a href="/studio/structure/category" className={`${btnCls} bg-white text-ink ring-1 ring-line`}>Manage categories</a>
         <a href="/studio" className={`${btnCls} bg-accent text-white`}>Open Studio</a>
       </PageHead>
       <Table>

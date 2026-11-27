@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import {q} from '@/lib/sanity'
-import {P, type Prod} from '@/lib/queries'
+import {P, categoriesQ, type Cat, type Prod} from '@/lib/queries'
 import ProductCard from '@/components/ProductCard'
 import GuideFilters from '@/components/GuideFilters'
 import Reveal from '@/components/Reveal'
@@ -37,12 +37,13 @@ export default async function Guides({searchParams}: {searchParams: Promise<SP>}
   const sort = sp.sort && sp.sort in orders ? sp.sort : 'featured'
   const page = Math.max(1, Math.min(500, parseInt(sp.page ?? '1', 10) || 1))
 
-  const categories = (await q<string[]>(`array::unique(*[_type=="product"&&active==true&&defined(category)].category)`)).sort((a, b) => a.localeCompare(b))
-  const category = sp.category && categories.includes(sp.category) ? sp.category : ''
+  const categories = (await q<Cat[]>(categoriesQ).catch(() => [] as Cat[])).filter((c) => c.count > 0)
+  const selected = categories.find((c) => c.slug === sp.category)
+  const category = selected?.slug ?? ''
 
   const conds = ['_type=="product"', 'active==true']
-  if (category) conds.push('category==$category')
-  if (words.length) conds.push('(title match $m||summary match $m||author match $m||category match $m)')
+  if (category) conds.push('category->slug.current==$category')
+  if (words.length) conds.push('(title match $m||summary match $m||author match $m||category->title match $m)')
   const filter = conds.join('&&')
   const from = (page - 1) * PER_PAGE
   const {items, total} = await q<{items: Prod[]; total: number}>(
@@ -58,13 +59,16 @@ export default async function Guides({searchParams}: {searchParams: Promise<SP>}
     <>
       <section className={`${wrap} pb-6 pt-10 sm:pt-16`}>
         <div className={`${eyebrow} mb-3`}>Shop</div>
-        <h1 className="mb-6 font-heading text-[clamp(34px,5vw,52px)] font-bold leading-[1.05] tracking-[-0.025em]">All guides</h1>
+        <h1 className="mb-6 font-heading text-[clamp(34px,5vw,52px)] font-bold leading-[1.05] tracking-[-0.025em]">{selected ? selected.title : 'All guides'}</h1>
+        {selected?.description && <p className="-mt-3 mb-6 max-w-[620px] text-body">{selected.description}</p>}
         <GuideFilters q={term} category={category} sort={sort} />
         {categories.length > 1 && (
-          <nav aria-label="Categories" className="mt-5 flex flex-wrap gap-2.5">
-            <Link href={href({...state, category: ''})} className={pill(!category)} aria-current={!category ? 'true' : undefined}>All</Link>
+          <nav aria-label="Categories" className="-mx-5 mt-5 flex gap-2.5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+            <Link href={href({...state, category: ''})} className={`${pill(!category)} shrink-0 whitespace-nowrap`} aria-current={!category ? 'true' : undefined}>All</Link>
             {categories.map((c) => (
-              <Link key={c} href={href({...state, category: c})} className={pill(category === c)} aria-current={category === c ? 'true' : undefined}>{c}</Link>
+              <Link key={c.slug} href={href({...state, category: c.slug})} className={`${pill(category === c.slug)} shrink-0 whitespace-nowrap`} aria-current={category === c.slug ? 'true' : undefined}>
+                {c.title} <span className="opacity-70">{c.count}</span>
+              </Link>
             ))}
           </nav>
         )}
@@ -73,7 +77,7 @@ export default async function Guides({searchParams}: {searchParams: Promise<SP>}
       <section className={`${wrap} pb-14 pt-4`}>
         <p className="mb-5 text-sm text-mute" aria-live="polite">
           {total === 0 ? 'No guides found' : `${total} ${total === 1 ? 'guide' : 'guides'}`}
-          {term && <> for &ldquo;{term}&rdquo;</>}{category && <> in {category}</>}
+          {term && <> for &ldquo;{term}&rdquo;</>}{selected && <> in {selected.title}</>}{(term || selected) && <> / <Link href="/guides" className="font-semibold underline">Clear filters</Link></>}
         </p>
         {items.length === 0 ? (
           <div className="flex flex-col items-start gap-5 rounded-[14px] bg-card p-7">

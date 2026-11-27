@@ -37,7 +37,7 @@ export default async function Guide({params}: {params: Promise<{slug: string}>})
     <>
       <nav aria-label="Breadcrumb" className={`${wrap} pb-2 pt-7 text-sm text-mute`}>
         <Link href="/guides" className="text-mute underline">Shop</Link>
-        {p.category && <> / <Link href={`/guides?category=${encodeURIComponent(p.category)}`} className="text-mute underline">{p.category}</Link></>} / {p.title}
+        {p.category && <> / <Link href={p.categorySlug ? `/guides?category=${p.categorySlug}` : '/guides'} className="text-mute underline">{p.category}</Link></>} / {p.title}
       </nav>
 
       <section className={`${wrap} flex flex-wrap gap-x-14 gap-y-10 pb-14 pt-6`}>

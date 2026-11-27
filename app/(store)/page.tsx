@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import {q} from '@/lib/sanity'
-import {settingsQ, productsQ, bundlesQ, naira, type Settings, type Prod, type Bundle} from '@/lib/queries'
+import {settingsQ, productsQ, bundlesQ, categoriesQ, naira, type Settings, type Prod, type Bundle, type Cat} from '@/lib/queries'
 import ProductCard from '@/components/ProductCard'
 import Reveal from '@/components/Reveal'
 import {ChevronRight} from 'lucide-react'
@@ -10,11 +10,11 @@ import HeroIntro from '@/components/HeroIntro'
 import {btnPrimary, eyebrow, wrap} from '@/lib/ui'
 
 export default async function Home() {
-  const [s, products, bundles] = await Promise.all([q<Settings>(settingsQ), q<Prod[]>(productsQ), q<Bundle[]>(bundlesQ)])
+  const [s, products, bundles, cats] = await Promise.all([q<Settings>(settingsQ), q<Prod[]>(productsQ), q<Bundle[]>(bundlesQ), q<Cat[]>(categoriesQ).catch(() => [] as Cat[])])
   const ratings = await ratingsBySlug().catch(() => ({} as Record<string, {avg: number; count: number}>))
   const hero = products.find((p) => p.coverUrl) ?? products[0]
   const feat = bundles.find((b) => b.featured)
-  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))] as string[]
+  const categories = cats.filter((c) => c.count > 0)
   const latest = products.slice(0, 8)
   const worth = feat ? feat.items.reduce((n, p) => n + p.price, 0) : 0
   const save = feat && worth > feat.price ? Math.round((1 - feat.price / worth) * 100) : 0
@@ -49,11 +49,12 @@ export default async function Home() {
           </Link>
         </div>
         {categories.length > 1 && (
-          <nav aria-label="Browse by category" className="mb-8 flex flex-wrap gap-2.5 text-sm font-medium">
-            <Link href="/guides" className="rounded-full bg-accent px-4 py-2 text-white no-underline hover:text-white">All</Link>
-            {categories.map((c) => (
-              <Link key={c} href={`/guides?category=${encodeURIComponent(c)}`} className="rounded-full bg-card px-4 py-2 text-ink no-underline hover:bg-line hover:text-ink">{c}</Link>
+          <nav aria-label="Browse by category" className="-mx-5 mb-8 flex gap-2.5 overflow-x-auto px-5 pb-1 text-sm font-medium sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+            <Link href="/guides" className="shrink-0 whitespace-nowrap rounded-full bg-accent px-4 py-2 text-white no-underline hover:text-white">All</Link>
+            {categories.slice(0, 6).map((c) => (
+              <Link key={c.slug} href={`/guides?category=${c.slug}`} className="shrink-0 whitespace-nowrap rounded-full bg-card px-4 py-2 text-ink no-underline hover:bg-line hover:text-ink">{c.title}</Link>
             ))}
+            {categories.length > 6 && <Link href="/guides" className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 font-semibold underline">More</Link>}
           </nav>
         )}
         <Reveal className="grid grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] gap-6">

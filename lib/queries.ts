@@ -1,13 +1,16 @@
 import type {PortableTextBlock} from 'next-sanity'
 export type Settings = {name?: string; tagline?: string; heroTitle?: string; heroSubtitle?: string; trust?: string[]; supportEmail?: string; whatsapp?: string; footerNote?: string} | null
-export type Prod = {_id: string; title: string; slug: string; summary?: string; price: number; pages?: number; category?: string; coverColor?: string; coverUrl?: string; version?: string; headline?: string; author?: string; fileSizeMb?: number}
+export type Prod = {_id: string; title: string; slug: string; summary?: string; price: number; pages?: number; category?: string; categorySlug?: string; coverColor?: string; coverUrl?: string; version?: string; headline?: string; author?: string; fileSizeMb?: number}
 export type ProdFull = Prod & {body?: PortableTextBlock[]; chapters?: {title: string; blurb: string}[]; faq?: {q: string; a: string}[]}
+export type Cat = {title: string; slug: string; count: number; description?: string}
 export type Bundle = {_id: string; title: string; slug: string; summary?: string; price: number; featured?: boolean; items: Prod[]}
 export type Page = {title: string; body?: PortableTextBlock[]; _updatedAt: string} | null
-export const P = `_id,title,"slug":slug.current,summary,price,pages,category,coverColor,"coverUrl":coverImage.asset->url,version,headline,author,fileSizeMb`
+export const P = `_id,title,"slug":slug.current,summary,price,pages,"category":coalesce(category->title,category),"categorySlug":category->slug.current,coverColor,"coverUrl":coverImage.asset->url,version,headline,author,fileSizeMb`
 export const settingsQ = `*[_type=="siteSettings"][0]{name,tagline,heroTitle,heroSubtitle,trust,supportEmail,whatsapp,footerNote}`
 export const productsQ = `*[_type=="product"&&active==true]|order(coalesce(sort,999) asc,_createdAt desc){${P}}`
 export const productQ = `*[_type=="product"&&active==true&&slug.current==$slug][0]{${P},body,chapters,faq}`
 export const bundlesQ = `*[_type=="bundle"&&active==true]|order(featured desc,_createdAt asc){_id,title,"slug":slug.current,summary,price,featured,"items":products[]->{${P}}}`
+// Categories with their live guide counts. Empty categories are dropped in code so they never show as dead filters.
+export const categoriesQ = `*[_type=="category"]|order(coalesce(sort,999) asc,title asc){title,"slug":slug.current,description,"count":count(*[_type=="product"&&active==true&&category._ref==^._id])}`
 export const pageQ = `*[_type=="page"&&slug.current==$slug][0]{title,body,_updatedAt}`
 export const naira = (n: number) => '₦' + n.toLocaleString('en-NG', {minimumFractionDigits: Number.isInteger(Math.round(n * 100) / 100) && Math.round(n * 100) % 100 === 0 ? 0 : 2, maximumFractionDigits: 2})
